@@ -17,6 +17,7 @@ Full problem framing: [`problem-statement.md`](./problem-statement.md)
 | Riya Vasoya | | Team member |
 | Vedant Songire | | Team member |
 | Pratyush Pandit| | Team member |
+| Kunal Patni | | Team memeber|
 
 ## Tech Stack
 
