@@ -13,10 +13,10 @@ Full problem framing: [`problem-statement.md`](./problem-statement.md)
 
 | Name | GitHub | Role |
 |---|---|---|
-|  | `modiumang2007-cmyk` | _e.g. Domain modeling lead_ |
-| _Add name_ | | _e.g. Case & exceptions lead_ |
-| _Add name_ | | _e.g. Interfaces & reporting lead_ |
-| _Add name_ | | _e.g. Persistence & UI lead_ |
+|  Umang Modi | `modiumang2007-cmyk` | Team leader |
+| Riya Vasoya | | Team member |
+| Vedant Songire | | Team member |
+| Pratyush Pandit| | Team member |
 
 ## Tech Stack
 
