@@ -1,0 +1,215 @@
+@startuml class-diagram
+title CaseFile — Domain Class Diagram
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+
+' =====================================================================
+' INTERFACES
+' Not survivors of the noun-verb analysis (interfaces are a design-phase
+' construct, not a domain noun) — introduced here because the CRC cards
+' for Evidence and Suspect explicitly name them as behaviour contracts.
+' =====================================================================
+interface Searchable {
+  + search(keyword: string): bool
+}
+
+interface Reportable {
+  + getReportContent(): string
+}
+
+' =====================================================================
+' ENUMERATION
+' "Case Status" was filtered out of the survivor list as an Attribute,
+' not a class — modeled here as its type, not as a domain object.
+' =====================================================================
+enum CaseStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  CLOSED
+}
+
+' =====================================================================
+' CORE AGGREGATE
+' =====================================================================
+class Case {
+  - caseId: string
+  - title: string
+  - status: CaseStatus
+  - openDate: string
+  + addSuspect(s: Suspect): void
+  + addWitness(w: Witness): void
+  + addEvidence(e: Evidence): void
+  + assignInvestigator(i: Investigator): void
+  + changeStatus(newStatus: CaseStatus): void
+  + closeCase(): Report
+}
+
+' =====================================================================
+' EVIDENCE HIERARCHY
+' =====================================================================
+abstract class Evidence {
+  - evidenceId: string
+  - description: string
+  - collectedBy: string
+  - isCritical: bool
+  - analysisResult: string
+  + Evidence(id: string, description: string, collectedBy: string)
+  + {abstract} analyzeEvidence(): void
+  + search(keyword: string): bool
+  + getReportContent(): string
+}
+
+class DigitalEvidence {
+  - metadataSnapshot: string
+  + analyzeEvidence(): void
+  + verifyIntegrity(): bool
+}
+
+class PhysicalEvidence {
+  - labResults: string
+  + analyzeEvidence(): void
+}
+
+class TestimonialEvidence {
+  - credibilityScore: double
+  + analyzeEvidence(): void
+}
+
+' =====================================================================
+' INVESTIGATOR HIERARCHY
+' =====================================================================
+abstract class Investigator {
+  - investigatorId: string
+  - name: string
+  - activeCaseload: int
+  + {abstract} investigate(): void
+  + canAcceptCase(): bool
+}
+
+class CyberInvestigator {
+  + investigate(): void
+}
+
+class FieldInvestigator {
+  + investigate(): void
+}
+
+' =====================================================================
+' PEOPLE / ADMINISTRATIVE
+' =====================================================================
+class Admin {
+  - adminId: string
+  - name: string
+  + createCase(title: string): Case
+  + assignInvestigator(i: Investigator, c: Case): void
+  + initiateClosure(c: Case): void
+}
+
+class Suspect {
+  - suspectId: string
+  - name: string
+  - personalDetails: string
+  + search(keyword: string): bool
+}
+
+class Witness {
+  - witnessId: string
+  - name: string
+  - statementMetadata: string
+  + getStatement(): string
+}
+
+' =====================================================================
+' REPORT
+' =====================================================================
+class Report {
+  - reportId: string
+  - generatedTimestamp: string
+  - content: string
+  + generateContent(): void
+  + archive(): void
+}
+
+' =====================================================================
+' EXCEPTIONS
+' Shown deriving from a lightweight external base to reflect real C++
+' practice (deriving from std::exception) without over-modeling it.
+' =====================================================================
+class "std::exception" as StdException <<external>>
+
+class CaseClosedException {
+  - message: string
+  + what(): string
+}
+
+class InvalidEvidenceException {
+  - message: string
+  + what(): string
+}
+
+class InvalidInvestigatorException {
+  - message: string
+  + what(): string
+}
+
+' =====================================================================
+' GENERALIZATION
+' =====================================================================
+DigitalEvidence      --|> Evidence
+PhysicalEvidence     --|> Evidence
+TestimonialEvidence  --|> Evidence
+CyberInvestigator    --|> Investigator
+FieldInvestigator    --|> Investigator
+CaseClosedException          --|> StdException
+InvalidEvidenceException     --|> StdException
+InvalidInvestigatorException --|> StdException
+
+' =====================================================================
+' REALIZATION
+' =====================================================================
+Evidence ..|> Searchable
+Evidence ..|> Reportable
+Suspect  ..|> Searchable
+
+' =====================================================================
+' ASSOCIATIONS (structural, with multiplicities)
+' =====================================================================
+Case "1" *-- "0..*" Evidence   : contains
+Case "1" *-- "0..*" Suspect    : involves
+Case "1" *-- "0..*" Witness    : involves
+Case "1" *-- "0..1" Report     : produces
+Case "0..*" -- "0..*" Investigator : assigned to >
+Witness "1" -- "0..*" TestimonialEvidence : provides >
+
+' =====================================================================
+' DEPENDENCIES (behavioural — "uses" / "throws", not ownership)
+' =====================================================================
+Case          ..> CaseClosedException          : <<throws>>
+Case          ..> InvalidInvestigatorException : <<throws>>
+Evidence      ..> InvalidEvidenceException     : <<throws>>
+Investigator  ..> InvalidInvestigatorException : <<throws>>
+CyberInvestigator ..> DigitalEvidence                          : <<analyzes>>
+FieldInvestigator ..> PhysicalEvidence                         : <<analyzes>>
+FieldInvestigator ..> TestimonialEvidence                      : <<analyzes>>
+Admin ..> Case         : <<creates>>
+Admin ..> Investigator : <<assigns>>
+Admin ..> Report       : <<initiates>>
+Report ..> Evidence     : <<summarizes>>
+Report ..> Investigator : <<summarizes>>
+
+note right of Admin
+  Modeled as a domain class (Option B),
+  resolving the open question raised in
+  docs/noun-analysis.md §4 — matches the
+  CRC card already written for Admin.
+end note
+
+note bottom of CaseStatus
+  Attribute type on Case, not a class —
+  eliminated by the Attribute filter in
+  the noun-verb analysis (docs/noun-analysis.md).
+end note
+
+@enduml
