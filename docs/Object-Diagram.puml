@@ -1,0 +1,118 @@
+@startuml ObjectDiagram
+' ============================================================
+' Object Diagram - Criminal Case Management System
+' Snapshot instance for Case C2026-045 (Warehouse Burglary)
+' All attributes shown, including those inherited from
+' abstract superclasses (Evidence, Investigator).
+' ============================================================
+
+skinparam backgroundColor white
+skinparam object {
+  BackgroundColor #EAF1FB
+  BorderColor #1A1A1A
+  FontName Helvetica
+  FontSize 12
+  FontStyle bold
+}
+skinparam ArrowColor #333333
+skinparam ArrowFontSize 11
+skinparam ArrowFontStyle italic
+skinparam ArrowFontColor #444444
+
+' ---------------- Objects ----------------
+
+object "admin1 : Admin" as admin1 {
+  adminId = "A101"
+  name = "Officer Raj Mehta"
+}
+
+object "case1 : Case" as case1 {
+  caseId = "C2026-045"
+  title = "Warehouse Burglary"
+  status = UNDER_INVESTIGATION
+  openDate = "2026-07-10"
+}
+
+' -- Investigator (inherited: investigatorId, name, activeCaseload) --
+
+object "investigator1 : FieldInvestigator" as investigator1 {
+  investigatorId = "INV-01"
+  name = "Priya Sharma"
+  activeCaseload = 3
+}
+
+object "investigator2 : CyberInvestigator" as investigator2 {
+  investigatorId = "INV-02"
+  name = "Arjun Patel"
+  activeCaseload = 2
+}
+
+object "witness1 : Witness" as witness1 {
+  witnessId = "W-01"
+  name = "Kavita Rao"
+  statementMetadata = "Recorded 2026-07-11"
+}
+
+object "suspect1 : Suspect" as suspect1 {
+  suspectId = "S-01"
+  name = "Vikram Joshi"
+  personalDetails = "Age 34, prior record"
+}
+
+object "report1 : Report" as report1 {
+  reportId = "R-01"
+  generatedTimestamp = "2026-08-19"
+  content = "Summary of findings"
+}
+
+' -- Evidence (inherited: evidenceId, description, collectedBy,
+'    isCritical, analysisResult) plus each subclass's own attribute --
+
+object "evidence1 : PhysicalEvidence" as evidence1 {
+  evidenceId = "E-01"
+  description = "Broken lock"
+  collectedBy = "Priya Sharma"
+  isCritical = true
+  analysisResult = "Confirmed forced entry"
+  labResults = "Tool marks matched"
+}
+
+object "evidence2 : DigitalEvidence" as evidence2 {
+  evidenceId = "E-02"
+  description = "CCTV footage"
+  collectedBy = "Arjun Patel"
+  isCritical = true
+  analysisResult = "Suspect identified on camera"
+  metadataSnapshot = "2026-07-10 23:14"
+}
+
+object "testimonial1 : TestimonialEvidence" as testimonial1 {
+  evidenceId = "E-03"
+  description = "Witness statement"
+  collectedBy = "Kavita Rao"
+  isCritical = false
+  analysisResult = "Corroborates timeline"
+  credibilityScore = 7.5
+}
+
+' ---------------- Links (from class-diagram associations) ----------------
+
+admin1 --> case1 : creates
+admin1 --> investigator1 : assigns
+admin1 --> investigator2 : assigns
+
+case1 --> investigator1 : "assigned to"
+case1 --> investigator2 : "assigned to"
+case1 --> witness1 : involves
+case1 --> suspect1 : involves
+case1 --> evidence1 : contains
+case1 --> evidence2 : contains
+case1 --> testimonial1 : contains
+case1 --> report1 : produces
+
+investigator1 --> evidence1 : analyzes
+investigator2 --> evidence2 : analyzes
+
+witness1 --> testimonial1 : provides
+
+@enduml
