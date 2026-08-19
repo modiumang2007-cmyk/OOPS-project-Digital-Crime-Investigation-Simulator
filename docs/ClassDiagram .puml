@@ -5,12 +5,6 @@ skinparam shadowing false
 skinparam linetype ortho
 hide circle
 
-' =====================================================================
-' INTERFACES
-' Not survivors of the noun-verb analysis (interfaces are a design-phase
-' construct, not a domain noun) — introduced here because the CRC cards
-' for Evidence and Suspect explicitly name them as behaviour contracts.
-' =====================================================================
 interface Searchable {
   + search(keyword: string): bool
 }
@@ -19,20 +13,12 @@ interface Reportable {
   + getReportContent(): string
 }
 
-' =====================================================================
-' ENUMERATION
-' "Case Status" was filtered out of the survivor list as an Attribute,
-' not a class — modeled here as its type, not as a domain object.
-' =====================================================================
 enum CaseStatus {
   OPEN
   UNDER_INVESTIGATION
   CLOSED
 }
 
-' =====================================================================
-' CORE AGGREGATE
-' =====================================================================
 class Case {
   - caseId: string
   - title: string
@@ -46,9 +32,6 @@ class Case {
   + closeCase(): Report
 }
 
-' =====================================================================
-' EVIDENCE HIERARCHY
-' =====================================================================
 abstract class Evidence {
   - evidenceId: string
   - description: string
@@ -77,9 +60,6 @@ class TestimonialEvidence {
   + analyzeEvidence(): void
 }
 
-' =====================================================================
-' INVESTIGATOR HIERARCHY
-' =====================================================================
 abstract class Investigator {
   - investigatorId: string
   - name: string
@@ -96,9 +76,6 @@ class FieldInvestigator {
   + investigate(): void
 }
 
-' =====================================================================
-' PEOPLE / ADMINISTRATIVE
-' =====================================================================
 class Admin {
   - adminId: string
   - name: string
@@ -121,9 +98,6 @@ class Witness {
   + getStatement(): string
 }
 
-' =====================================================================
-' REPORT
-' =====================================================================
 class Report {
   - reportId: string
   - generatedTimestamp: string
@@ -132,11 +106,6 @@ class Report {
   + archive(): void
 }
 
-' =====================================================================
-' EXCEPTIONS
-' Shown deriving from a lightweight external base to reflect real C++
-' practice (deriving from std::exception) without over-modeling it.
-' =====================================================================
 class "std::exception" as StdException <<external>>
 
 class CaseClosedException {
@@ -154,9 +123,6 @@ class InvalidInvestigatorException {
   + what(): string
 }
 
-' =====================================================================
-' GENERALIZATION
-' =====================================================================
 DigitalEvidence      --|> Evidence
 PhysicalEvidence     --|> Evidence
 TestimonialEvidence  --|> Evidence
@@ -166,16 +132,10 @@ CaseClosedException          --|> StdException
 InvalidEvidenceException     --|> StdException
 InvalidInvestigatorException --|> StdException
 
-' =====================================================================
-' REALIZATION
-' =====================================================================
 Evidence ..|> Searchable
 Evidence ..|> Reportable
 Suspect  ..|> Searchable
 
-' =====================================================================
-' ASSOCIATIONS (structural, with multiplicities)
-' =====================================================================
 Case "1" *-- "0..*" Evidence   : contains
 Case "1" *-- "0..*" Suspect    : involves
 Case "1" *-- "0..*" Witness    : involves
@@ -183,9 +143,6 @@ Case "1" *-- "0..1" Report     : produces
 Case "0..*" -- "0..*" Investigator : assigned to >
 Witness "1" -- "0..*" TestimonialEvidence : provides >
 
-' =====================================================================
-' DEPENDENCIES (behavioural — "uses" / "throws", not ownership)
-' =====================================================================
 Case          ..> CaseClosedException          : <<throws>>
 Case          ..> InvalidInvestigatorException : <<throws>>
 Evidence      ..> InvalidEvidenceException     : <<throws>>
