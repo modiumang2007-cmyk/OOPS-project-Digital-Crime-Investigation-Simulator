@@ -14,10 +14,10 @@ Full problem framing: [`problem-statement.md`](./problem-statement.md)
 | Name | GitHub | Role |
 |---|---|---|
 |  Umang Modi | `modiumang2007-cmyk` | Team leader |
-| Riya Vasoya | | Team member |
-| Vedant Songire | | Team member |
-| Pratyush Pandit| | Team member |
-| Kunal Patni | | Team memeber|
+| Riya Vasoya |`riyaa1211` | Team member |
+| Vedant Songire |`vedant25-iiitv` | Team member |
+| Pratyush Pandit| `Pratyush116`| Team member |
+| Kunal Patni | `kunal786-design` | Team memeber|
 
 ## Tech Stack
 
