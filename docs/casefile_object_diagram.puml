@@ -1,0 +1,109 @@
+@startuml
+title CaseFile — Object Diagram: runtime snapshot after the "Art Heist" demo session
+
+skinparam shadowing false
+skinparam objectBackgroundColor #EAF0FA
+skinparam objectBorderColor #333333
+skinparam ArrowColor #333333
+
+object "g_cases : map<string, Case>" as gcases {
+  size = 1
+}
+
+object "r1 : Report" as r1 {
+  reportId_ = "RPT-5"
+  generatedTimestamp_ = "2026-09-16"
+  content_ = "CASE REPORT ... Art Heist ..."
+}
+
+object "case1 : Case" as case1 {
+  caseId_ = "CASE-1"
+  title_ = "Art Heist"
+  status_ = UNDER_INVESTIGATION
+  openDate_ = "2026-09-16"
+  closeDate_ = ""
+}
+
+object "ev1 : DigitalEvidence" as ev1 {
+  evidenceId_ = "EVID-1000"
+  description_ = "USB drive with exfil data"
+  collectedBy_ = "Detective Rao"
+  type_ = DIGITAL
+  isCritical_ = true
+  analyzed_ = true
+  analysisResult_ = "Digital analysis complete — metadata: file_hash=A3F9C2"
+  checksum_ = 4120420758
+  metadataSnapshot_ = "file_hash=A3F9C2"
+}
+
+object "ev2 : PhysicalEvidence" as ev2 {
+  evidenceId_ = "EVID-1001"
+  description_ = "Crowbar recovered at gallery"
+  collectedBy_ = "Detective Rao"
+  type_ = PHYSICAL
+  isCritical_ = false
+  analyzed_ = true
+  analysisResult_ = "Physical analysis complete — lab: Tool marks match door frame"
+  checksum_ = 4233115192
+  labResults_ = "Tool marks match door frame"
+}
+
+object "ev3 : TestimonialEvidence" as ev3 {
+  evidenceId_ = "EVID-1002"
+  description_ = "Guard saw two figures leaving"
+  collectedBy_ = "Detective Rao"
+  type_ = TESTIMONIAL
+  isCritical_ = false
+  analyzed_ = true
+  analysisResult_ = "Testimonial analysis complete — score: 7.500000"
+  checksum_ = 637635895
+  witnessName_ = "Lena Fox"
+  credibilityScore_ = 7.5
+}
+
+object "sus1 : Suspect" as sus1 {
+  suspectId_ = "SUS-2"
+  name_ = "Arman Kler"
+  personalDetails_ = "Night-shift security contractor"
+}
+
+object "wit1 : Witness" as wit1 {
+  witnessId_ = "WIT-3"
+  name_ = "Lena Fox"
+  statementMetadata_ = "Saw two figures leave at 23:40"
+}
+
+object "inv1 : FieldInvestigator" as inv1 {
+  investigatorId_ = "INV-1"
+  name_ = "Detective Rao"
+  type_ = FIELD
+  activeCaseload_ = 1
+  MAX_CASELOAD_ = 5
+}
+
+object "inv2 : CyberInvestigator" as inv2 {
+  investigatorId_ = "INV-4"
+  name_ = "Meera Iyer"
+  type_ = CYBER
+  activeCaseload_ = 0
+  MAX_CASELOAD_ = 5
+}
+
+object "g_investigators : vector<shared_ptr<Investigator>>" as ginv {
+  size = 2
+}
+
+gcases *-- case1 : key CASE-1
+r1 ..> case1 : built from
+
+case1 *-- ev1 : evidence_[0]
+case1 *-- ev2 : evidence_[1]
+case1 *-- ev3 : evidence_[2]
+case1 *-- sus1 : suspects_[0]
+case1 *-- wit1 : witnesses_[0]
+case1 o-- inv1 : investigator_
+
+ginv o-- inv1
+ginv o-- inv2
+
+@enduml
