@@ -1,0 +1,232 @@
+@startuml
+title CaseFile — Class Diagram (as implemented in src/)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam classBackgroundColor #F7FAFF
+skinparam classBorderColor #333333
+skinparam ArrowColor #333333
+skinparam noteBackgroundColor #FFFFD9
+skinparam class {
+  BackgroundColor<<abstract>> #FFF5DC
+}
+hide circle
+
+' ---------- Enums ----------
+class InvestigatorType {
+  CYBER
+  FIELD
+}
+
+class CaseStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  CLOSED
+}
+
+class EvidenceType {
+  DIGITAL
+  PHYSICAL
+  TESTIMONIAL
+}
+
+' ---------- Exceptions ----------
+class "std::exception" as StdException <<external>>
+
+class CaseClosedException {
+  -message_: string
+  +what(): const char*
+}
+
+class InvalidInvestigatorException {
+  -message_: string
+  +what(): const char*
+}
+
+class InvalidEvidenceException {
+  -message_: string
+  +what(): const char*
+}
+
+CaseClosedException --|> StdException
+InvalidInvestigatorException --|> StdException
+InvalidEvidenceException --|> StdException
+
+' ---------- Investigators ----------
+abstract class Investigator <<abstract>> {
+  -investigatorId_: string
+  -name_: string
+  -type_: InvestigatorType
+  -activeCaseload_: int
+  {static} -MAX_CASELOAD_: int = 5
+  --
+  #Investigator(id, name, type)
+  {abstract} +investigate(): void
+  +canAcceptCase(): bool
+  +incrementCaseload(): void
+  +decrementCaseload(): void
+}
+
+class CyberInvestigator {
+  +investigate(): void
+}
+
+class FieldInvestigator {
+  +investigate(): void
+}
+
+CyberInvestigator --|> Investigator
+FieldInvestigator --|> Investigator
+Investigator --> InvestigatorType
+
+' ---------- Evidence ----------
+abstract class Evidence <<abstract>> {
+  -evidenceId_: string
+  -description_: string
+  -collectedBy_: string
+  -type_: EvidenceType
+  -isCritical_: bool
+  -analyzed_: bool
+  -analysisResult_: string
+  -checksum_: uint32_t
+  --
+  {abstract} -typeSpecificAnalysis(): void
+  #setAnalysisResult(r: string): void
+  +Evidence(id, desc, collector, type)
+  {abstract} +verifyIntegrity(): bool
+  {abstract} +getReportContent(): string
+  +analyzeEvidence(): void
+  +search(keyword: string): bool
+  +setCritical(c: bool): void
+  +setDescription(d: string): void
+  {static} +computeChecksum(data: string): uint32_t
+}
+
+class TestimonialEvidence {
+  -credibilityScore_: double
+  -witnessName_: string
+  --
+  -typeSpecificAnalysis(): void
+  +verifyIntegrity(): bool
+  +getReportContent(): string
+  +getCredibilityScore(): double
+  +getWitnessName(): string
+}
+
+class DigitalEvidence {
+  -metadataSnapshot_: string
+  --
+  -typeSpecificAnalysis(): void
+  +verifyIntegrity(): bool
+  +getReportContent(): string
+  +getMetadata(): string
+}
+
+class PhysicalEvidence {
+  -labResults_: string
+  --
+  -typeSpecificAnalysis(): void
+  +verifyIntegrity(): bool
+  +getReportContent(): string
+  +getLabResults(): string
+}
+
+TestimonialEvidence --|> Evidence
+DigitalEvidence --|> Evidence
+PhysicalEvidence --|> Evidence
+Evidence --> EvidenceType
+Evidence ..> InvalidEvidenceException : <<throws>>
+
+note bottom of Evidence
+  analyzeEvidence() is a Template Method:
+  it calls the private pure-virtual
+  typeSpecificAnalysis(), then sets analyzed_.
+end note
+
+' ---------- People ----------
+class Suspect {
+  -suspectId_: string
+  -name_: string
+  -personalDetails_: string
+  --
+  +search(keyword: string): bool
+}
+
+class Witness {
+  -witnessId_: string
+  -name_: string
+  -statementMetadata_: string
+  --
+  +search(keyword: string): bool
+}
+
+note bottom of Suspect
+  Suspect and Witness are flat records
+  (no shared Person base class).
+end note
+
+' ---------- Case ----------
+class Case {
+  -caseId_: string
+  -title_: string
+  -status_: CaseStatus
+  -openDate_: string
+  -closeDate_: string
+  -evidence_: vector<unique_ptr<Evidence>>
+  -suspects_: vector<Suspect>
+  -witnesses_: vector<Witness>
+  -investigator_: shared_ptr<Investigator>
+  --
+  -requireOpen(): void
+  +addSuspect(s: Suspect): void
+  +addWitness(w: Witness): void
+  +addEvidence(e: unique_ptr<Evidence>): void
+  +removeEvidence(id: string): bool
+  +assignInvestigator(i: shared_ptr<Investigator>): void
+  +changeStatus(s: CaseStatus): void
+  +closeCase(): void
+  +analyzeAllEvidence(): void
+  +verifyEvidence(id: string): bool
+  +reportAllEvidence(): void
+  +search(keyword: string): bool
+  +getReportContent(): string
+  +operator==(other: Case): bool
+  +operator+=(e: unique_ptr<Evidence>): Case&
+}
+
+Case --> CaseStatus
+Case "1" *-- "0..*" Witness : holds
+Case "1" *-- "0..*" Suspect : holds
+Case "1" *-- "0..*" Evidence : owns\n(unique_ptr)
+Case "0..*" o-- "0..1" Investigator : assigned\n(shared_ptr)
+Case ..> CaseClosedException : <<throws>>
+Case ..> InvalidInvestigatorException : <<throws>>
+
+' ---------- Report ----------
+class Report {
+  -reportId_: string
+  -generatedTimestamp_: string
+  -content_: string
+  --
+  +Report(id, timestamp, c: Case)
+  +serialize(): string
+  {static} +deserialize(line: string): Report
+}
+
+Report ..> Case : <<builds from>>
+
+' ---------- Console App ----------
+class "Console App (main.cpp)" as ConsoleApp <<module>> {
+  -g_cases: map<string, Case>
+  -g_investigators: vector<shared_ptr<Investigator>>
+  +menu handlers...
+  --
+  +saveCases(file: string): void
+  +loadCases(file: string): void
+}
+
+ConsoleApp "1" *-- "0..*" Case : g_cases
+ConsoleApp "1" o-- "0..*" Investigator : g_investigators
+ConsoleApp ..> Report : <<creates>>
+
+@enduml
