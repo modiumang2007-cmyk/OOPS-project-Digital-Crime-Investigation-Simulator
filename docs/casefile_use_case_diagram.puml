@@ -1,0 +1,90 @@
+@startuml
+title CaseFile — Use Case Diagram (console menu, options 0-14)
+
+left to right direction
+skinparam shadowing false
+skinparam usecaseBackgroundColor #EAF0FA
+skinparam usecaseBorderColor #333333
+skinparam ArrowColor #333333
+skinparam noteBackgroundColor #FFFFD9
+
+actor "Investigator\n(console user)" as INV
+actor "File System\n(cases.txt)" as FS <<external system>>
+
+rectangle "CaseFile System" {
+
+  rectangle "Case management" {
+    usecase "Create Case" as UC_Create
+    usecase "View All Cases" as UC_View
+    usecase "Search Records" as UC_Search
+    usecase "Close Case" as UC_Close
+    usecase "Generate Case Report" as UC_Report
+    usecase "Run Investigator Procedure" as UC_Run
+  }
+
+  rectangle "People" {
+    usecase "Add Suspect" as UC_Sus
+    usecase "Add Witness" as UC_Wit
+    usecase "Register Investigator" as UC_Reg
+    usecase "Assign Investigator" as UC_Assign
+  }
+
+  rectangle "Evidence" {
+    usecase "Add Evidence" as UC_AddEv
+    usecase "Analyze Evidence" as UC_Analyze
+    usecase "Verify Evidence Integrity" as UC_Verify
+    usecase "Remove Evidence" as UC_RemEv
+  }
+
+  rectangle "Persistence" {
+    usecase "Save to File" as UC_Save
+    usecase "Load from File" as UC_Load
+  }
+
+  usecase "Reject Closed-Case Operation" as UC_Reject
+}
+
+' ---- Actor associations ----
+INV --> UC_Create
+INV --> UC_View
+INV --> UC_Search
+INV --> UC_Close
+INV --> UC_Report
+INV --> UC_Sus
+INV --> UC_Wit
+INV --> UC_Reg
+INV --> UC_Assign
+INV --> UC_AddEv
+INV --> UC_Analyze
+INV --> UC_Verify
+INV --> UC_RemEv
+INV --> UC_Save
+INV --> UC_Load
+
+UC_Save -- FS
+UC_Load -- FS
+
+' ---- Include relationships ----
+UC_Close ..> UC_Reject : <<include>>
+UC_Sus ..> UC_Reject : <<include>>
+UC_Wit ..> UC_Reject : <<include>>
+UC_Assign ..> UC_Reject : <<include>>
+UC_AddEv ..> UC_Reject : <<include>>
+UC_RemEv ..> UC_Reject : <<include>>
+
+' ---- Extend relationship ----
+UC_Run ..> UC_Report : <<extend>>\n[investigator assigned\nAND evidence exists]
+
+' ---- Notes ----
+note top of UC_Close
+  Precondition (enforced in main.cpp):
+  an investigator must be assigned.
+end note
+
+note right of UC_Reject
+  Case::requireOpen() throws
+  CaseClosedException on every
+  mutating operation.
+end note
+
+@enduml
