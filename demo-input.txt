@@ -1,0 +1,22 @@
+1
+Art Heist
+3
+CASE-1
+1
+USB drive with exfil data
+Detective Rao
+file_hash=A3F9C2
+11
+2
+Detective Rao
+6
+CASE-1
+1
+4
+CASE-1
+7
+CASE-1
+9
+CASE-1
+13
+0
