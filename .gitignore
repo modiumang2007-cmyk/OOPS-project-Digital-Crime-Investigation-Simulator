@@ -1,0 +1,9 @@
+# Build artifacts
+*.exe
+*.o
+*.obj
+build/
+
+# Runtime data
+cases.txt
+*.log
